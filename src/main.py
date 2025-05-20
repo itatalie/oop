@@ -23,3 +23,5 @@ category1.add_product(product4)
 print(str(category1))
 
 print(category1.products)
+
+

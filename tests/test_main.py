@@ -32,3 +32,5 @@ def test_duplicate_product_handling():
     assert category._Category__products[0].quantity == 8
     assert category._Category__products[0].price == 12000
     assert Category.product_count == 5
+
+
