@@ -14,7 +14,7 @@ def test_product_initialization(sample_product):
 
 def test_category_counters():
     product1 = Product("Product1", 10.0, "Desc1", 5)
-    category1 = Category("Category1")
+    category1 = Category("Category1", "Description for Category1")
     category1.add_product(product1)
 
     assert len(category1._Category__products) == 1
@@ -22,7 +22,7 @@ def test_category_counters():
 
 
 def test_duplicate_product_handling():
-    category = Category("Электроника")
+    category = Category("Электроника", "Описание категории")
     product1 = Product("Телефон", 10000, "Смартфон", 5)
     product2 = Product("Телефон", 12000, "Смартфон", 3)
 
