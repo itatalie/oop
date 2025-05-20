@@ -1,57 +1,29 @@
-from abc import ABC, abstractmethod
-
-
-class BaseProduct(ABC):
+class Product:
     def __init__(self, name: str, description: str, price: float, quantity: int):
+        if quantity <= 0:
+            raise ValueError("Товар с нулевым количеством не может быть добавлен")
         self.name = name
         self.description = description
-        self._price = price
+        self.__price = price
         self.quantity = quantity
 
     @property
-    @abstractmethod
     def price(self) -> float:
-        pass
+        return self.__price
 
     @price.setter
-    @abstractmethod
     def price(self, value: float):
-        if not isinstance(value, (int, float)):
-            raise TypeError("Цена должна быть числом.")
         if value <= 0:
-            raise ValueError("Цена не должна быть нулевой или отрицательной.")
-        self._price = value
+            raise ValueError("Цена должна быть больше нуля")
+        self.__price = value
 
     def __add__(self, other):
-        if type(self) is not type(other):
-            raise TypeError("Нельзя складывать товары разных типов.")
-        return self._price * self.quantity + other.price * other.quantity
+        if type(self) != type(other):
+            raise TypeError("Нельзя складывать товары разных классов.")
+        return self.price * self.quantity + other.price * other.quantity
 
     def __str__(self):
         return f"{self.name}, {self.price} руб. Остаток: {self.quantity} шт."
-
-
-class CreationLoggerMixin:
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        print(f"Создан объект {self.__class__.__name__}({self.name}, {self.description}, {self.price}, {self.quantity})")
-
-
-class Product(CreationLoggerMixin, BaseProduct):
-    def __init__(self, name: str, description: str, price: float, quantity: int):
-        super().__init__(name=name, description=description, price=price, quantity=quantity)
-
-    @property
-    def price(self) -> float:
-        return self._price
-
-    @price.setter
-    def price(self, value: float):
-        if not isinstance(value, (int, float)):
-            raise TypeError("Цена должна быть числом.")
-        if value <= 0:
-            raise ValueError("Цена не должна быть нулевой или отрицательной.")
-        self._price = value
 
 
 class Smartphone(Product):
@@ -87,22 +59,33 @@ class Category:
     def add_product(self, product):
         if not isinstance(product, Product):
             raise TypeError("Можно добавлять только экземпляры класса Product")
+        if product.quantity <= 0:
+            raise ValueError("Товар с нулевым количеством не может быть добавлен")
+
         for existing in self.__products:
             if existing.name == product.name:
                 existing.quantity += product.quantity
                 if product.price > existing.price:
                     existing.price = product.price
                 return
+
         self.__products.append(product)
         Category.product_count += product.quantity
 
+    def middle_price(self) -> float:
+        if not self.__products:
+            return 0.0
+        total_price = sum(p.price for p in self.__products)
+        count = len(self.__products)
+        try:
+            return total_price / count
+        except ZeroDivisionError:
+            return 0.0
+
     @property
-    def products_list(self):
-        return self.__products
+    def products(self) -> str:
+        return "\n".join(str(product) for product in self.__products)
 
     def __str__(self):
         total_quantity = sum(p.quantity for p in self.__products)
         return f"{self.name}, количество продуктов: {total_quantity} шт."
-
-    def __repr__(self):
-        return f"Category(name={self.name}, description={self.description}, products={self.products_list})"
