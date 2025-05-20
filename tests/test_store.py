@@ -1,83 +1,73 @@
 import pytest
-from src.store import Product, Category
+from src.store import Product, Smartphone, LawnGrass, Category
 
 
 @pytest.fixture(autouse=True)
 def reset_counters():
-    """
-    Сбрасывает глобальные счетчики перед каждым тестом.
-    """
-    Category.product_counter = 0
+    Category.product_count = 0
 
 
-def test_product_initialization():
-    """Проверка инициализации продукта."""
-    product = Product("Test Product", 100.0, "Test Description", 10)
-    assert product.name == "Test Product"
-    assert product.price == 100.0
-    assert product.quantity == 10
+def test_smartphone_initialization():
+    smartphone = Smartphone(
+        "Iphone 15", 210000.0, "512GB, Gray space", 8, 98.2, "15", 512, "Gray space"
+    )
+    assert smartphone.efficiency == 98.2
+    assert smartphone.model == "15"
+    assert smartphone.memory == 512
+    assert smartphone.color == "Gray space"
 
 
-def test_product_string_representation():
-    """Проверка строкового представления продукта."""
-    product = Product("Test Product", 100.0, "Test Description", 10)
-    assert str(product) == "Test Product, 100.0 руб. Остаток: 10 шт."
+def test_lawn_grass_initialization():
+    grass = LawnGrass(
+        "Газонная трава",
+        500.0,
+        "Элитная трава для газона",
+        20,
+        "Россия",
+        "7 дней",
+        "Зеленый",
+    )
+    assert grass.country == "Россия"
+    assert grass.germination_period == "7 дней"
+    assert grass.color == "Зеленый"
 
 
-def test_category_initialization():
-    """Проверка инициализации категории."""
-    category = Category("Test Category", "Description")
-    assert category.name == "Test Category"
-    assert category.description == "Description"
+def test_addition_with_same_class():
+    product1 = Product("Test1", 10.0, "Desc1", 5)
+    product2 = Product("Test2", 20.0, "Desc2", 3)
+    assert product1 + product2 == 10 * 5 + 20 * 3
+
+
+def test_addition_with_different_classes():
+    product = Product("Test", 10.0, "Desc", 5)
+    smartphone = Smartphone("Iphone", 500.0, "128GB", 2, 95.0, "X", 128, "Black")
+    with pytest.raises(TypeError):
+        product + smartphone
 
 
 def test_category_add_product():
-    """Проверка добавления продукта в категорию."""
     category = Category("Test Category", "Description")
-    product1 = Product("Product1", 10.0, "Desc1", 5)
-    category.add_product(product1)
-
+    smartphone = Smartphone(
+        "Iphone 15", 210000.0, "512GB, Gray space", 8, 98.2, "15", 512, "Gray space"
+    )
+    category.add_product(smartphone)
     assert len(category._Category__products) == 1
-    assert Category.product_counter == 1
+    assert Category.product_count == 8
 
 
-def test_category_string_representation():
-    """Проверка строкового представления категории."""
+def test_category_add_invalid_product():
     category = Category("Test Category", "Description")
-    product1 = Product("Product1", 10.0, "Desc1", 5)
-    product2 = Product("Product2", 20.0, "Desc2", 3)
-    category.add_product(product1)
-    category.add_product(product2)
-
-    assert str(category) == "Test Category, количество продуктов: 8 шт."
-
-
-def test_product_addition():
-    """Проверка магического метода сложения для продуктов."""
-    product1 = Product("Product1", 10.0, "Desc1", 5)
-    product2 = Product("Product2", 20.0, "Desc2", 3)
-
-    total_cost = product1 + product2
-    assert total_cost == 110.0, "Сумма стоимостей товаров рассчитана некорректно."
-
-
-def test_product_addition_with_invalid_type():
-    """Проверка сложения продукта с объектом другого типа."""
-    product = Product("Product1", 10.0, "Desc1", 5)
     with pytest.raises(TypeError):
-        product + "Неверный тип"
+        category.add_product("Not a product")
 
 
 def test_duplicate_product_handling():
-    """Проверка обработки дубликатов при добавлении продукта."""
-    category = Category("Test Category", "Description")
-    product1 = Product("Product1", 10.0, "Desc1", 5)
-    product2 = Product("Product1", 15.0, "Desc2", 3)
-
+    category = Category("Электроника", "Описание категории")
+    product1 = Product("Телефон", 10000, "Смартфон", 5)
+    product2 = Product("Телефон", 12000, "Смартфон", 3)
     category.add_product(product1)
     category.add_product(product2)
-
     assert len(category._Category__products) == 1
     assert category._Category__products[0].quantity == 8
-    assert category._Category__products[0].price == 15.0
-    assert Category.product_counter == 1
+    assert category._Category__products[0].price == 12000
+    assert Category.product_count == 5

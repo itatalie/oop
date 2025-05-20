@@ -1,14 +1,7 @@
 class Product:
     def __init__(self, name: str, price: float, description: str, quantity: int):
-        """
-        Инициализация продукта.
-        :param name: Название продукта.
-        :param price: Цена продукта.
-        :param description: Описание продукта.
-        :param quantity: Количество товара на складе.
-        """
         self.name = name
-        self.__price = price  # Приватный атрибут цены
+        self.price = price
         self.description = description
         self.quantity = quantity
 
@@ -18,66 +11,84 @@ class Product:
 
     @price.setter
     def price(self, value: float):
+        if not isinstance(value, (int, float)):
+            raise TypeError("Цена должна быть числом.")
         if value <= 0:
-            print("Цена не должна быть нулевая или отрицательная")
-        else:
-            self.__price = value
+            raise ValueError("Цена не должна быть нулевой или отрицательной.")
+        self.__price = value
 
     def __str__(self):
-        """
-        Строковое представление продукта.
-        """
-        return f"{self.name}, {self.__price} руб. Остаток: {self.quantity} шт."
+        return f"{self.name}, {self.price} руб. Остаток: {self.quantity} шт."
 
     def __add__(self, other):
-        """
-        Магический метод сложения для расчета общей стоимости товаров.
-        """
-        if isinstance(other, Product):
-            return (self.__price * self.quantity) + (other.price * other.quantity)
-        raise TypeError("Нельзя складывать объекты разных типов.")
+        if type(self) != type(other):
+            raise TypeError("Нельзя складывать объекты разных типов.")
+        return (self.price * self.quantity) + (other.price * other.quantity)
+
+
+class Smartphone(Product):
+    def __init__(
+        self,
+        name: str,
+        price: float,
+        description: str,
+        quantity: int,
+        efficiency: float,
+        model: str,
+        memory: int,
+        color: str,
+    ):
+        super().__init__(name, price, description, quantity)
+        self.efficiency = efficiency
+        self.model = model
+        self.memory = memory
+        self.color = color
+
+
+class LawnGrass(Product):
+    def __init__(
+        self,
+        name: str,
+        price: float,
+        description: str,
+        quantity: int,
+        country: str,
+        germination_period: str,
+        color: str,
+    ):
+        super().__init__(name, price, description, quantity)
+        self.country = country
+        self.germination_period = germination_period
+        self.color = color
 
 
 class Category:
-    product_counter = 0  # Класс-атрибут для подсчета продуктов
+    product_count = 0
 
-    def __init__(self, name: str, description: str):
-        """
-        Инициализация категории.
-        :param name: Название категории.
-        :param description: Описание категории.
-        """
+    def __init__(self, name: str, description: str, products=None):
         self.name = name
         self.description = description
-        self.__products = []  # Приватный атрибут списка товаров
+        self.__products = [] if products is None else products
+        Category.product_count += sum(product.quantity for product in self.__products)
 
     def add_product(self, product):
-        """
-        Добавляет продукт в категорию.
-        """
         if not isinstance(product, Product):
-            raise TypeError("Можно добавлять только объекты класса Product.")
-
+            raise TypeError(
+                "Можно добавлять только объекты класса Product или его наследников."
+            )
         for existing_product in self.__products:
             if existing_product.name == product.name:
                 existing_product.quantity += product.quantity
                 if product.price > existing_product.price:
                     existing_product.price = product.price
                 return
-
         self.__products.append(product)
-        Category.product_counter += 1  # Увеличиваем счетчик только при успешном добавлении
+        Category.product_count += product.quantity
 
     @property
     def products(self) -> str:
-        """
-        Геттер для вывода списка товаров.
-        """
         return "\n".join(str(product) for product in self.__products)
 
     def __str__(self):
-        """
-        Строковое представление категории.
-        """
         total_quantity = sum(product.quantity for product in self.__products)
         return f"{self.name}, количество продуктов: {total_quantity} шт."
