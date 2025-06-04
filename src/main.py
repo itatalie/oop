@@ -16,14 +16,10 @@ if __name__ == "__main__":
     product4 = Product("55\" QLED 4K", "Фоновая подсветка", 123000.0, 7)
     category1.add_product(product4)
     print(str(category1))
-    print(category1.products)
+
+    print(category1.products_list)
 
     try:
-        print(product1 + product2)  # должно пройти
+        print(product1 + product2)
     except TypeError as e:
-        print(f"Ошибка: {e}")
-
-    try:
-        product1.price = -100
-    except ValueError as e:
         print(f"Ошибка: {e}")
